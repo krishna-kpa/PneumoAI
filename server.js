@@ -78,6 +78,8 @@ admin.initializeApp({
 const multerStorage = multer.memoryStorage();
 const upload = multer({ storage: multerStorage });
 
+const { spawn } = require('child_process');
+
 // Upload route
 app.post('/upload', upload.single('file'), async (req, res) => {
   try {
@@ -106,7 +108,25 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     });
 
     stream.on('finish', async () => {
-      res.json({ fileId: savedFile._id }); // Send file ID as JSON response
+      // Process image using Python CNN model
+      const pythonProcess = spawn('python', ['process_image.py', savedFile.filename]);
+      
+      let modelOutput = '';
+
+      pythonProcess.stdout.on('data', (data) => {
+        console.log(`Python model output: ${data}`);
+        modelOutput += data;
+      });
+
+      pythonProcess.stderr.on('data', (data) => {
+        console.error(`Python model error: ${data}`);
+      });
+
+      pythonProcess.on('close', (code) => {
+        console.log(`Python model process exited with code ${code}`);
+        // Send the model output back to the client as JSON response
+        res.json({ fileId: savedFile._id, message: 'Image uploaded and processed successfully', modelOutput });
+      });
     });
 
     stream.end(req.file.buffer);
