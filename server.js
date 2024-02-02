@@ -133,6 +133,40 @@ app.post('/usercheck', async (req, res) => {
   });
   res.json({ message: 'User check successful' });
 });
+// user registeration
+// Register route
+app.post('/register', async (req, res) => {
+    try {
+      const { userId, name, password, age, bloodGroup } = req.body;
+  
+      // Check if the user already exists
+      const existingUser = await User.findOne({ userId });
+  
+      if (existingUser) {
+        // If the user already exists, return false indicating user creation failed
+        res.json({ 'user-created': false,'existing-user':True });
+      } else {
+        // Create a new user
+        const newUser = new User({
+          userId,
+          name,
+          password,
+          age,
+          bloodGroup
+        });
+  
+        // Save the new user to the database
+        await newUser.save();
+  
+        // Return true indicating successful user creation
+        res.json({ 'user-created': true,'existing-user':false  });
+      }
+    } catch (error) {
+      // If an error occurs, return false indicating user creation failed
+      res.status(500).json({ 'user-created': false, error: error.message,'existing-user':false  });
+    }
+  });
+  
 
 // Start the server
 app.listen(port, () => {
