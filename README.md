@@ -57,5 +57,9 @@ this will be the output<br />
 {<br/>
   "bloodgroup": "new_bloodgroup"<br/>
 }<br/>
+#### Example
+![image](https://github.com/krishna-kpa/PneumoAI/assets/118350087/8ffa0b96-34d2-49e4-820c-33ad5cdc4c40)
+
+## User Login
 
 
