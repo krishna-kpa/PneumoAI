@@ -13,7 +13,7 @@ try:
     image = np.array(Image.open(image_data))
 
     # Load the TensorFlow model
-    model = load_model('your_model.h5')  # Replace 'your_model.h5' with your model file path
+    model = load_model('trained.h5')  # Replace 'your_model.h5' with your model file path
 
     # Perform inference
     predictions = model.predict(image)
