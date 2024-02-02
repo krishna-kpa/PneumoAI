@@ -17,6 +17,18 @@ mongoose.connect('mongodb+srv://admin_kp:admin123@cluster0.hlr4lt7.mongodb.net/P
 }).then(() => console.log('Connected to MongoDB'))
   .catch((error) => console.error('Failed to connect to MongoDB:', error));
 
+async function listStorageBuckets() {
+  try {
+    const [buckets] = await storage.getBuckets();
+    console.log('Buckets:');
+    buckets.forEach(bucket => {
+      console.log(bucket.name);
+    });
+  } catch (error) {
+    console.error('Error listing buckets:', error);
+  }
+}
+
 // Define schemas and models
 const fileSchema = new mongoose.Schema({
   filename: String,
