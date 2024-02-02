@@ -4,7 +4,7 @@ A web applications API that performs image processing using a CNN model and send
 ## User Registration
 Only done through the O-Auth using Google or Facebook. After Authenticated collect the password, name, age, and blood group from the user and send it to the API route given below.<br />
 ##### input JSON format 
-{
+{<br />
   userId: "google_id or fb_id"<br />
   name: "name_of_user",<br />
   password: "the_password",<br />
