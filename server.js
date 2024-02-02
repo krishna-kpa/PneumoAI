@@ -9,20 +9,20 @@ const app = express();
 const port = 3000;
 app.use(express.json());
 // Connect to MongoDB
-mongoose.connect('mongodb+srv://admin_kp:admin123@cluster0.hlr4lt7.mongodb.net/files?retryWrites=true&w=majority', {
+mongoose.connect('mongodb+srv://admin_kp:admin123@cluster0.hlr4lt7.mongodb.net/PneumoAI?retryWrites=true&w=majority', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => console.log('Connected to MongoDB'))
   .catch((error) => console.error('Failed to connect to MongoDB:', error));
 
-// Create a file model
 const fileSchema = new mongoose.Schema({
   filename: String,
   mimetype: String,
   size: Number,
-});
+}, { collection: 'files' }); // Specify collection name as 'files'
+
 const File = mongoose.model('File', fileSchema);
-// Create the user model
+
 const userSchema = new mongoose.Schema({
   userId: {
     type: String,
@@ -45,11 +45,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-});
+}, { collection: 'users' }); // Specify collection name as 'users'
 
-// Create the User model
 const User = mongoose.model('User', userSchema);
-
 
 // Authenticate with ADC
 const storage = new Storage({
