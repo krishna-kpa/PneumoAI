@@ -83,54 +83,55 @@ const upload = multer({ storage: multerStorage });
 
 // Upload route
 app.post('/upload', upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        const userId = req.body.userId;
+        if (!userId) {
+            return res.status(400).json({ error: 'User ID is required' });
+        }
+
+        const timestamp = Date.now(); 
+        const uniqueFilename = `${userId}-${timestamp}`;
+        const newFile = new File({
+            filename: uniqueFilename,
+            mimetype: req.file.mimetype,
+            size: req.file.size,
+        });
+
+        const savedFile = await newFile.save();
+
+        const pythonProcess = spawn('python', ['process_image.py', savedFile.filename]);
+
+        pythonProcess.stdin.write(JSON.stringify(req.file.buffer));
+        pythonProcess.stdin.end();
+
+        let modelOutput = '';
+
+        pythonProcess.stdout.on('data', (data) => {
+            console.log(`Python model output: ${data}`);
+            modelOutput += data;
+        });
+
+        pythonProcess.stderr.on('data', (data) => {
+            console.error(`Python model error: ${data}`);
+            res.status(500).json({ error: 'An error occurred during image processing' });
+        });
+
+        pythonProcess.on('close', (code) => {
+            if (code !== 0) {
+                return res.status(500).json({ error: 'Image processing failed' });
+            }
+            res.json({ fileId: savedFile._id, message: 'Image uploaded and processed successfully', modelOutput });
+        });
+    } catch (error) {
+        console.error('Error during file upload:', error);
+        res.status(500).json({ error: 'An unexpected error occurred' });
     }
-
-    const userId = req.body.userId;
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
-
-    const timestamp = Date.now(); 
-    const uniqueFilename = `${userId}-${timestamp}`;
-    const newFile = new File({
-      filename: uniqueFilename,
-      mimetype: req.file.mimetype,
-      size: req.file.size,
-    });
-
-    const savedFile = await newFile.save();
-
-    const pythonProcess = spawn('python', ['process_image.py', savedFile.filename]);
-
-    pythonProcess.stdin.write(JSON.stringify(req.file.buffer));
-    pythonProcess.stdin.end();
-
-    let modelOutput = '';
-
-    pythonProcess.stdout.on('data', (data) => {
-      console.log(`Python model output: ${data}`);
-      modelOutput += data;
-    });
-
-    pythonProcess.stderr.on('data', (data) => {
-      console.error(`Python model error: ${data}`);
-      res.status(500).json({ error: 'An error occurred during image processing' });
-    });
-
-    pythonProcess.on('close', (code) => {
-      if (code !== 0) {
-        return res.status(500).json({ error: 'Image processing failed' });
-      }
-      res.json({ fileId: savedFile._id, message: 'Image uploaded and processed successfully', modelOutput });
-    });
-  } catch (error) {
-    console.error('Error during file upload:', error);
-    res.status(500).json({ error: 'An unexpected error occurred' });
-  }
 });
+
 
 // Get file route
 app.get('/files/:id', async (req, res) => {
