@@ -14,6 +14,7 @@ from tensorflow.keras.models import load_model
 from PIL import Image
 
 try:
+    print("Image processing...")
     # Load the image data from Node.js
     image_data = json.loads(sys.stdin.readline())
 
@@ -34,9 +35,11 @@ try:
     sys.stdout.flush()
 
 except json.JSONDecodeError as e:
+    print(e+" first")
     print("Error: Invalid JSON format:", e)
     sys.stdout.flush()
 
 except Exception as e:
+    print(e)
     print(json.dumps({"error": "An error occurred during image processing", "exception": str(e)}))
     sys.stdout.flush()
