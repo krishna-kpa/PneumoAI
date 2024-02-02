@@ -2,8 +2,12 @@ import sys
 import json
 import subprocess
 
-# Install numpy
-subprocess.run(['pip', 'install', 'numpy'])
+# Install required Python packages
+packages = ['numpy', 'tensorflow', 'Pillow']
+for package in packages:
+    subprocess.run(['pip', 'install', package])
+
+# Import installed packages
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import load_model
@@ -36,4 +40,3 @@ except json.JSONDecodeError as e:
 except Exception as e:
     print(json.dumps({"error": "An error occurred during image processing", "exception": str(e)}))
     sys.stdout.flush()
-
