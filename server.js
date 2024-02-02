@@ -110,6 +110,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 // Get file route
 app.get('/files/:id', async (req, res) => {
   try {
@@ -154,37 +155,111 @@ app.post('/usercheck', async (req, res) => {
 
 // User registration route
 app.post('/register', async (req, res) => {
-    try {
-      const { userId, name, password, age, bloodGroup } = req.body;
+  try {
+    const { userId, name, password, age, bloodGroup } = req.body;
   
-      // Check if the user already exists
-      const existingUser = await User.findOne({ userId });
+    // Check if the user already exists
+    const existingUser = await User.findOne({ userId });
   
-      if (existingUser) {
-        // If the user already exists, return false indicating user creation failed
-        res.json({ 'user-created': false,'existing-user':true });
-      } else {
-        // Create a new user
-        const newUser = new User({
-          userId,
-          name,
-          password,
-          age,
-          bloodGroup
-        });
+    if (existingUser) {
+      // If the user already exists, return false indicating user creation failed
+      res.json({ 'user-created': false,'existing-user':true });
+    } else {
+      // Create a new user
+      const newUser = new User({
+        userId,
+        name,
+        password,
+        age,
+        bloodGroup
+      });
   
-        // Save the new user to the database
-        await newUser.save();
+      // Save the new user to the database
+      await newUser.save();
   
-        // Return true indicating successful user creation
-        res.json({ 'user-created': true,'existing-user':false  });
-      }
-    } catch (error) {
-      res.status(500).json({ 'user-created': false, error: error.message,'existing-user':false  });
+      // Return true indicating successful user creation
+      res.json({ 'user-created': true,'existing-user':false  });
     }
-  });
-  
-// User update routes...
+  } catch (error) {
+    res.status(500).json({ 'user-created': false, error: error.message,'existing-user':false  });
+  }
+});
+
+// Update user's name
+app.put('/users/:userId/name', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { name } = req.body;
+
+    // Find the user by userId and update the name
+    const updatedUser = await User.findOneAndUpdate(
+      { userId },
+      { $set: { name } },
+      { new: true } // Return the updated user
+    );
+
+    res.json({ updatedUser });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update user's password
+app.put('/users/:userId/password', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { password } = req.body;
+
+    // Find the user by userId and update the password
+    const updatedUser = await User.findOneAndUpdate(
+      { userId },
+      { $set: { password } },
+      { new: true } // Return the updated user
+    );
+
+    res.json({ updatedUser });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update user's age
+app.put('/users/:userId/age', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { age } = req.body;
+
+    // Find the user by userId and update the age
+    const updatedUser = await User.findOneAndUpdate(
+      { userId },
+      { $set: { age } },
+      { new: true } // Return the updated user
+    );
+
+    res.json({ updatedUser });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update user's blood group
+app.put('/users/:userId/bloodgroup', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { bloodGroup } = req.body;
+
+    // Find the user by userId and update the blood group
+    const updatedUser = await User.findOneAndUpdate(
+      { userId },
+      { $set: { bloodGroup } },
+      { new: true } // Return the updated user
+    );
+
+    res.json({ updatedUser });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Start the server
 app.listen(port, () => {
