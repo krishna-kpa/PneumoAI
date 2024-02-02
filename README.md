@@ -28,6 +28,10 @@ if error becomes <br />
   error: error.message<br />
 }<br />
 this will be the output<br />
+#### Example
+![image](https://github.com/krishna-kpa/PneumoAI/assets/118350087/2a2f2d5f-0109-46df-9de7-1bb511bd03d7)
+![image](https://github.com/krishna-kpa/PneumoAI/assets/118350087/bf41977e-a9a9-4924-a22f-d473befc9eeb)
+
 ## User Updation
 ### Update the user's name
 #### API route(PUT request) : https://pneumoai-service.onrender.com/users/"the_user_id"/name
