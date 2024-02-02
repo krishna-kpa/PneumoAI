@@ -30,5 +30,6 @@ except json.JSONDecodeError as e:
     sys.stdout.flush()
 
 except Exception as e:
-    print("Error:", e)
+    print(json.dumps({"error": "An error occurred during image processing", "exception": str(e)}))
     sys.stdout.flush()
+
