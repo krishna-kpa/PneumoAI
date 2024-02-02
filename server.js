@@ -83,9 +83,10 @@ const upload = multer({ storage: multerStorage });
 // Upload route
 app.post('/upload', upload.single('file'), async (req, res) => {
   try {
+    const userId = req.body.userId;
     console.log("req for upload received");
     const timestamp = Date.now(); 
-    const uniqueFilename = `${timestamp}-${req.file.originalname}`;
+    const uniqueFilename = `${userId}-${timestamp}`;
     const newFile = new File({
       fileorgname: req.file.originalname,
       filename:uniqueFilename,
@@ -195,6 +196,84 @@ app.post('/register', async (req, res) => {
     }
   });
   
+// Updation operations
+
+// Update user's name
+app.put('/users/:userId/name', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { name } = req.body;
+  
+      // Find the user by userId and update the name
+      const updatedUser = await User.findOneAndUpdate(
+        { userId },
+        { $set: { name } },
+        { new: true } // Return the updated user
+      );
+  
+      res.json({ updatedUser });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
+  // Update user's password
+  app.put('/users/:userId/password', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { password } = req.body;
+  
+      // Find the user by userId and update the password
+      const updatedUser = await User.findOneAndUpdate(
+        { userId },
+        { $set: { password } },
+        { new: true } // Return the updated user
+      );
+  
+      res.json({ updatedUser });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
+  // Update user's age
+  app.put('/users/:userId/age', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { age } = req.body;
+  
+      // Find the user by userId and update the age
+      const updatedUser = await User.findOneAndUpdate(
+        { userId },
+        { $set: { age } },
+        { new: true } // Return the updated user
+      );
+  
+      res.json({ updatedUser });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
+  // Update user's blood group
+  app.put('/users/:userId/bloodgroup', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { bloodGroup } = req.body;
+  
+      // Find the user by userId and update the blood group
+      const updatedUser = await User.findOneAndUpdate(
+        { userId },
+        { $set: { bloodGroup } },
+        { new: true } // Return the updated user
+      );
+  
+      res.json({ updatedUser });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+   
 
 // Start the server
 app.listen(port, () => {
