@@ -7,7 +7,7 @@ const { Storage } = require('@google-cloud/storage');
 
 const app = express();
 const port = 3000;
-
+app.use(express.json());
 // Connect to MongoDB
 mongoose.connect('mongodb+srv://admin_kp:admin123@cluster0.hlr4lt7.mongodb.net/files?retryWrites=true&w=majority', {
   useNewUrlParser: true,
