@@ -84,45 +84,32 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     const savedFile = await newFile.save();
 
-    const fileUpload = storage.bucket('e-class-file-upload.appspot.com').file(uniqueFilename);
-    const stream = fileUpload.createWriteStream({
-      metadata: {
-        contentType: req.file.mimetype,
-      },
+    const pythonProcess = spawn('python', ['process_image.py', savedFile.filename]);
+
+    // Pass uploaded image data to the Python script
+    pythonProcess.stdin.write(JSON.stringify(req.file.buffer));
+    pythonProcess.stdin.end();
+
+    let modelOutput = '';
+
+    pythonProcess.stdout.on('data', (data) => {
+      console.log(`Python model output: ${data}`);
+      modelOutput += data;
     });
 
-    stream.on('error', (error) => {
-      res.status(500).json({ error: error.message });
+    pythonProcess.stderr.on('data', (data) => {
+      console.error(`Python model error: ${data}`);
     });
 
-    stream.on('finish', async () => {
-      // Process image using Python CNN model
-      const pythonProcess = spawn('python', ['process_image.py', savedFile.filename]);
-      
-      let modelOutput = '';
-
-      pythonProcess.stdout.on('data', (data) => {
-        console.log(`Python model output: ${data}`);
-        modelOutput += data;
-      });
-
-      pythonProcess.stderr.on('data', (data) => {
-        console.error(`Python model error: ${data}`);
-      });
-
-      pythonProcess.on('close', (code) => {
-        console.log(`Python model process exited with code ${code}`);
-        // Send the model output back to the client as JSON response
-        res.json({ fileId: savedFile._id, message: 'Image uploaded and processed successfully', modelOutput });
-      });
+    pythonProcess.on('close', (code) => {
+      console.log(`Python model process exited with code ${code}`);
+      // Send the model output back to the client as JSON response
+      res.json({ fileId: savedFile._id, message: 'Image uploaded and processed successfully', modelOutput });
     });
-
-    stream.end(req.file.buffer);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
-
 // Get file route
 app.get('/files/:id', async (req, res) => {
   try {
