@@ -19,6 +19,7 @@ Only done through the O-Auth using Google or Facebook. After Authenticated colle
 if   user-created=False and existing-user=True then  load the login page<br />
 elif user-created=True and existing-user=False then  load the login page<br />
 elif user-created=True and existing-user=False then  load the sign-up page<br />
+##### output JSON format 
 if error becomes <br />
 {<br />
   user-created: "True or False",<br />
