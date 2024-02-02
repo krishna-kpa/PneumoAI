@@ -1,5 +1,9 @@
 import sys
 import json
+import subprocess
+
+# Install numpy
+subprocess.run(['pip', 'install', 'numpy'])
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import load_model
