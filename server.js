@@ -22,6 +22,34 @@ const fileSchema = new mongoose.Schema({
   size: Number,
 });
 const File = mongoose.model('File', fileSchema);
+// Create the user model
+const userSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  age: {
+    type: Number,
+    required: true,
+  },
+  bloodGroup: {
+    type: String,
+    required: true,
+  },
+});
+
+// Create the User model
+const User = mongoose.model('User', userSchema);
+
 
 // Authenticate with ADC
 const storage = new Storage({
