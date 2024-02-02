@@ -1,0 +1,28 @@
+{
+  "name": "pneumoai",
+  "version": "1.0.0",
+  "description": "A web applications API which performs image processing using a CNN model and send the result back to the user.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/krishna-kpa/PneumoAI.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/krishna-kpa/PneumoAI/issues"
+  },
+  "homepage": "https://github.com/krishna-kpa/PneumoAI#readme",
+  "dependencies": {
+    "@google-cloud/firestore": "^6.6.1",
+    "express": "^4.18.2",
+    "firebase-admin": "^11.9.0",
+    "mongoose": "^7.2.4",
+    "multer": "^1.4.5-lts.1",
+    "multer-google-storage": "^1.3.0",
+    "uuid": "^9.0.0"
+  }
+}
