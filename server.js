@@ -171,7 +171,7 @@ app.post('/register', async (req, res) => {
   
       if (existingUser) {
         // If the user already exists, return false indicating user creation failed
-        res.json({ 'user-created': false,'existing-user':True });
+        res.json({ 'user-created': false,'existing-user':true });
       } else {
         // Create a new user
         const newUser = new User({
