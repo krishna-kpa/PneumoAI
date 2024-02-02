@@ -61,5 +61,17 @@ this will be the output<br />
 ![image](https://github.com/krishna-kpa/PneumoAI/assets/118350087/8ffa0b96-34d2-49e4-820c-33ad5cdc4c40)
 
 ## User Login
+it can be achieved in two ways
+## 1. Using Google or Facebook
+in such case use the below json format 
+#### API route (POST request) : https://pneumoai-service.onrender.com/usercheck
+![image](https://github.com/krishna-kpa/PneumoAI/assets/118350087/3cd861b6-6526-4c0f-8300-4f6c1cdc13a4)
+## 2. Using userId and Password
+in such case use the below json format
+#### API route (POST request) : https://pneumoai-service.onrender.com/usercheck
+![image](https://github.com/krishna-kpa/PneumoAI/assets/118350087/c9f8adf4-f667-49ab-beed-54cd2a6f7dd4)
+the output will be user True or False
+
+
 
 
