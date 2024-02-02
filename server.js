@@ -138,28 +138,25 @@ app.get('/files/:id', async (req, res) => {
 });
 
 // User check route
-app.get('/usercheck', (req, res) => {
-// User check route
 app.post('/usercheck', async (req, res) => {
-    try {
-      const { userID, passWord, authenticated } = req.body;
+  try {
+    const { userId, passWord, authenticated } = req.body;
   
-      // Check if the request is authenticated
-      if (authenticated) {
-        // If authenticated is true, check if the userID exists in the database
-        const userExists = await User.exists({ userID });
-        res.json({ user: userExists });
-      } else {
-        // If authenticated is false, check if the userID and password match
-        const user = await User.findOne({ userID, passWord });
-        res.json({ user: !!user }); // Convert user to boolean and send as response
-      }
-    } catch (error) {
-      res.status(500).json({ error: error.message }); // Send error message as JSON response
+    // Check if the request is authenticated
+    if (authenticated) {
+      // If authenticated is true, check if the userId exists in the database
+      const userExists = await User.exists({ userId });
+      res.json({ user: userExists });
+    } else {
+      // If authenticated is false, check if the userId and password match
+      const user = await User.findOne({ userId, password: passWord });
+      res.json({ user: !!user }); // Convert user to boolean and send as response
     }
-  });
-  res.json({ message: 'User check successful' });
+  } catch (error) {
+    res.status(500).json({ error: error.message }); // Send error message as JSON response
+  }
 });
+
 // user registeration
 // Register route
 app.post('/register', async (req, res) => {
