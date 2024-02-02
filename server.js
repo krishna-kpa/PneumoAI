@@ -4,10 +4,12 @@ const path = require('path');
 const mongoose = require('mongoose');
 const admin = require('firebase-admin');
 const { Storage } = require('@google-cloud/storage');
+const { spawn } = require('child_process');
 
 const app = express();
 const port = 3000;
 app.use(express.json());
+
 // Connect to MongoDB
 mongoose.connect('mongodb+srv://admin_kp:admin123@cluster0.hlr4lt7.mongodb.net/PneumoAI?retryWrites=true&w=majority', {
   useNewUrlParser: true,
@@ -15,11 +17,12 @@ mongoose.connect('mongodb+srv://admin_kp:admin123@cluster0.hlr4lt7.mongodb.net/P
 }).then(() => console.log('Connected to MongoDB'))
   .catch((error) => console.error('Failed to connect to MongoDB:', error));
 
+// Define schemas and models
 const fileSchema = new mongoose.Schema({
   filename: String,
   mimetype: String,
   size: Number,
-}, { collection: 'files' }); // Specify collection name as 'files'
+}, { collection: 'files' });
 
 const File = mongoose.model('File', fileSchema);
 
@@ -45,27 +48,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-}, { collection: 'users' }); // Specify collection name as 'users'
+}, { collection: 'users' });
 
 const User = mongoose.model('User', userSchema);
 
-// Authenticate with ADC
+// Authenticate with Google Cloud Storage
 const storage = new Storage({
   projectId: 'e-class-file-upload', // Replace with your actual Google Cloud project ID
   keyFilename: path.join(__dirname, 'e-class-file-upload-firebase-adminsdk-5yx1f-ee3142614f.json'), // Provide the relative path to the JSON key file
 });
-
-async function listStorageBuckets() {
-  try {
-    const [buckets] = await storage.getBuckets();
-    console.log('Buckets:');
-    buckets.forEach((bucket) => {
-      console.log(`- ${bucket.name}`);
-    });
-  } catch (error) {
-    console.error('Error listing storage buckets:', error);
-  }
-}
 
 // Initialize Firebase Admin SDK
 const serviceAccount = require('./e-class-file-upload-firebase-adminsdk-5yx1f-ee3142614f.json');
@@ -78,23 +69,20 @@ admin.initializeApp({
 const multerStorage = multer.memoryStorage();
 const upload = multer({ storage: multerStorage });
 
-const { spawn } = require('child_process');
-
 // Upload route
 app.post('/upload', upload.single('file'), async (req, res) => {
   try {
     const userId = req.body.userId;
-    console.log("req for upload received");
+    console.log("Request for upload received");
     const timestamp = Date.now(); 
     const uniqueFilename = `${userId}-${timestamp}`;
     const newFile = new File({
-      fileorgname: req.file.originalname,
-      filename:uniqueFilename,
+      filename: uniqueFilename,
       mimetype: req.file.mimetype,
       size: req.file.size,
     });
 
-    const savedFile = await newFile.save();// Get current timestamp
+    const savedFile = await newFile.save();
 
     const fileUpload = storage.bucket('e-class-file-upload.appspot.com').file(uniqueFilename);
     const stream = fileUpload.createWriteStream({
@@ -104,7 +92,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     });
 
     stream.on('error', (error) => {
-      res.status(500).json({ error: error.message }); // Send error message as JSON response
+      res.status(500).json({ error: error.message });
     });
 
     stream.on('finish', async () => {
@@ -131,7 +119,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     stream.end(req.file.buffer);
   } catch (error) {
-    res.status(500).json({ error: error.message }); // Send error message as JSON response
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -141,19 +129,19 @@ app.get('/files/:id', async (req, res) => {
     const fileId = req.params.id;
     const file = await File.findById(fileId);
     if (!file) {
-      return res.status(404).json({ error: 'File not found' }); // Send error message as JSON response
+      return res.status(404).json({ error: 'File not found' });
     }
 
     const fileDownload = storage.bucket('e-class-file-upload.appspot.com').file(file.filename);
     const stream = fileDownload.createReadStream();
 
     stream.on('error', (error) => {
-      res.status(500).json({ error: error.message }); // Send error message as JSON response
+      res.status(500).json({ error: error.message });
     });
 
     stream.pipe(res);
   } catch (error) {
-    res.status(500).json({ error: error.message }); // Send error message as JSON response
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -170,15 +158,14 @@ app.post('/usercheck', async (req, res) => {
     } else {
       // If authenticated is false, check if the userId and password match
       const user = await User.findOne({ userId, password: passWord });
-      res.json({ user: !!user }); // Convert user to boolean and send as response
+      res.json({ user: !!user });
     }
   } catch (error) {
-    res.status(500).json({ error: error.message }); // Send error message as JSON response
+    res.status(500).json({ error: error.message });
   }
 });
 
-// user registeration
-// Register route
+// User registration route
 app.post('/register', async (req, res) => {
     try {
       const { userId, name, password, age, bloodGroup } = req.body;
@@ -206,89 +193,11 @@ app.post('/register', async (req, res) => {
         res.json({ 'user-created': true,'existing-user':false  });
       }
     } catch (error) {
-      // If an error occurs, return false indicating user creation failed
       res.status(500).json({ 'user-created': false, error: error.message,'existing-user':false  });
     }
   });
   
-// Updation operations
-
-// Update user's name
-app.put('/users/:userId/name', async (req, res) => {
-    try {
-      const { userId } = req.params;
-      const { name } = req.body;
-  
-      // Find the user by userId and update the name
-      const updatedUser = await User.findOneAndUpdate(
-        { userId },
-        { $set: { name } },
-        { new: true } // Return the updated user
-      );
-  
-      res.json({ updatedUser });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-  
-  // Update user's password
-  app.put('/users/:userId/password', async (req, res) => {
-    try {
-      const { userId } = req.params;
-      const { password } = req.body;
-  
-      // Find the user by userId and update the password
-      const updatedUser = await User.findOneAndUpdate(
-        { userId },
-        { $set: { password } },
-        { new: true } // Return the updated user
-      );
-  
-      res.json({ updatedUser });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-  
-  // Update user's age
-  app.put('/users/:userId/age', async (req, res) => {
-    try {
-      const { userId } = req.params;
-      const { age } = req.body;
-  
-      // Find the user by userId and update the age
-      const updatedUser = await User.findOneAndUpdate(
-        { userId },
-        { $set: { age } },
-        { new: true } // Return the updated user
-      );
-  
-      res.json({ updatedUser });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-  
-  // Update user's blood group
-  app.put('/users/:userId/bloodgroup', async (req, res) => {
-    try {
-      const { userId } = req.params;
-      const { bloodGroup } = req.body;
-  
-      // Find the user by userId and update the blood group
-      const updatedUser = await User.findOneAndUpdate(
-        { userId },
-        { $set: { bloodGroup } },
-        { new: true } // Return the updated user
-      );
-  
-      res.json({ updatedUser });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-   
+// User update routes...
 
 // Start the server
 app.listen(port, () => {
