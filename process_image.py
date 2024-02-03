@@ -1,10 +1,16 @@
 import sys
 import json
+import subprocess
 import base64
 import numpy as np
 from tensorflow.keras.models import load_model
 from PIL import Image
 import io
+
+# Install required Python packages
+packages = ['numpy', 'tensorflow', 'Pillow']
+for package in packages:
+    subprocess.run(['pip', 'install', package])
 
 try:
     print("Image processing...")
