@@ -7,11 +7,6 @@ from tensorflow.keras.models import load_model
 from PIL import Image
 import io
 
-# Install required Python packages
-packages = ['numpy', 'tensorflow', 'Pillow']
-for package in packages:
-    subprocess.run(['pip', 'install', package])
-
 try:
     print("Image processing...")
     # Load the image data from Node.js
@@ -19,6 +14,12 @@ try:
     # Convert base64 encoded image data to numpy array
     image_bytes = base64.b64decode(image_data['image'])
     image = np.array(Image.open(io.BytesIO(image_bytes)))
+
+    # Install required Python packages
+    subprocess.run(['pip', 'install', 'numpy', 'tensorflow', 'Pillow'])
+
+    # Reload numpy after installation
+    import numpy as np
 
     # Load the TensorFlow model
     model = load_model('trained.h5')  # Replace 'trained.h5' with your model file path
