@@ -85,6 +85,7 @@ const upload = multer({ storage: multerStorage });
 app.post('/upload', upload.single('file'), async (req, res) => {
     try {
         console.log("Request for upload received");
+        console.log(req.body);
         const userId = req.body.userId;
 
         if (!req.file) {
