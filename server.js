@@ -100,11 +100,15 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     const imageBuffer = req.file.buffer.toString('base64');
     
     // Pass uploaded image data to the Python script
-    const pythonProcess = spawn('python', ['process_image.py']);
+   const pythonProcess = spawn('python', ['process_image.py']);
 
-    pythonProcess.stdin.write(JSON.stringify({ userId, imageBuffer }));
-    pythonProcess.stdin.end();
+  const jsonData = {
+    userId: req.body.userId,
+    image: req.file.buffer.toString('base64'),
+};
 
+pythonProcess.stdin.write(JSON.stringify(jsonData));
+pythonProcess.stdin.end();
     let modelOutput = '';
 
     pythonProcess.stdout.on('data', (data) => {
