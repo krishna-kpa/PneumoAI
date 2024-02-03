@@ -2,9 +2,6 @@ import sys
 import json
 import subprocess
 import base64
-import numpy as np
-from tensorflow.keras.models import load_model
-from PIL import Image
 import io
 
 try:
@@ -20,6 +17,8 @@ try:
 
     # Reload numpy after installation
     import numpy as np
+    from tensorflow.keras.models import load_model
+    from PIL import Image
 
     # Load the TensorFlow model
     model = load_model('trained.h5')  # Replace 'trained.h5' with your model file path
