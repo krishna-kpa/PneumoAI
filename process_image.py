@@ -3,11 +3,18 @@ import json
 import subprocess
 import base64
 import io
+from PIL import Image
+import numpy as np
 
 try:
     print("Image processing...")
     # Load the image data from Node.js
     image_data = json.loads(sys.stdin.readline())
+
+    # Check if 'image' key exists in the JSON data
+    if 'image' not in image_data:
+        raise KeyError("'image' key not found in JSON data")
+
     # Convert base64 encoded image data to numpy array
     image_bytes = base64.b64decode(image_data['image'])
     image = np.array(Image.open(io.BytesIO(image_bytes)))
@@ -18,7 +25,6 @@ try:
     # Reload numpy after installation
     import numpy as np
     from tensorflow.keras.models import load_model
-    from PIL import Image
 
     # Load the TensorFlow model
     model = load_model('trained.h5')  # Replace 'trained.h5' with your model file path
@@ -35,6 +41,11 @@ try:
 
 except json.JSONDecodeError as e:
     print("Error: Invalid JSON format:", e)
+    sys.stdout.flush()
+
+except KeyError as e:
+    print("Error during image processing:", e)
+    print(json.dumps({"error": "An error occurred during image processing", "exception": str(e)}))
     sys.stdout.flush()
 
 except Exception as e:
