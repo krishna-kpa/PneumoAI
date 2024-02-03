@@ -33,9 +33,7 @@ def process_image(image_data):
 
     except Exception as e:
         return {"error": "An error occurred during image processing", "exception": str(e)}
-
-if __name__ == "__main__":
-    try:
+try:
         print("Image processing...")
         # Load the image data from Node.js
         image_data = json.loads(sys.stdin.readline())
@@ -66,16 +64,16 @@ if __name__ == "__main__":
         print(json.dumps(model_output))
         sys.stdout.flush()
 
-    except json.JSONDecodeError as e:
+except json.JSONDecodeError as e:
         print("Error: Invalid JSON format:", e)
         sys.stdout.flush()
 
-    except KeyError as e:
+except KeyError as e:
         print("Error during image processing:", e)
         print(json.dumps({"error": "An error occurred during image processing", "exception": str(e)}))
         sys.stdout.flush()
 
-    except Exception as e:
+except Exception as e:
         print("Error during image processing:", e)
         print(json.dumps({"error": "An error occurred during image processing", "exception": str(e)}))
         sys.stdout.flush()
