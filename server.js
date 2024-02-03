@@ -17,18 +17,6 @@ mongoose.connect('mongodb+srv://admin_kp:admin123@cluster0.hlr4lt7.mongodb.net/P
 }).then(() => console.log('Connected to MongoDB'))
   .catch((error) => console.error('Failed to connect to MongoDB:', error));
 
-async function listStorageBuckets() {
-  try {
-    const [buckets] = await storage.getBuckets();
-    console.log('Buckets:');
-    buckets.forEach(bucket => {
-      console.log(bucket.name);
-    });
-  } catch (error) {
-    console.error('Error listing buckets:', error);
-  }
-}
-
 // Define schemas and models
 const fileSchema = new mongoose.Schema({
   filename: String,
@@ -85,27 +73,31 @@ const upload = multer({ storage: multerStorage });
 app.post('/upload', upload.single('file'), async (req, res) => {
     try {
         console.log("Request for upload received");
-        console.log(req.body);
-        const userId = req.body.userId;
 
+        // Check if the file field is present in the request
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
+        // Extract userId from the request body
+        const userId = req.body.userId;
+
+        // Generate a unique filename
         const timestamp = Date.now();
         const uniqueFilename = `${userId}-${timestamp}`;
+
+        // Create a new File document
         const newFile = new File({
             filename: uniqueFilename,
             mimetype: req.file.mimetype,
             size: req.file.size,
         });
 
-        // Save file to MongoDB asynchronously
+        // Save the file to MongoDB
         const savedFile = await newFile.save();
 
+        // Process the uploaded image with a Python script
         console.time('imageProcessingTime'); // Start timing image processing
-
-        // Pass uploaded image data to the Python script
         const pythonProcess = spawn('python', ['process_image.py']);
 
         const jsonData = {
@@ -137,6 +129,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
 // Get file route
 app.get('/files/:id', async (req, res) => {
   try {
@@ -307,6 +300,3 @@ app.put('/users/:userId/bloodgroup', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
-
-// List storage buckets
-listStorageBuckets();
