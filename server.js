@@ -83,55 +83,48 @@ const upload = multer({ storage: multerStorage });
 
 // Upload route
 app.post('/upload', upload.single('file'), async (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ error: 'No file uploaded' });
-        }
+  try {
+    const userId = req.body.userId;
+    console.log("Request for upload received");
+    const timestamp = Date.now(); 
+    const uniqueFilename = `${userId}-${timestamp}`;
+    const newFile = new File({
+      filename: uniqueFilename,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+    });
 
-        const userId = req.body.userId;
-        if (!userId) {
-            return res.status(400).json({ error: 'User ID is required' });
-        }
+    const savedFile = await newFile.save();
 
-        const timestamp = Date.now(); 
-        const uniqueFilename = `${userId}-${timestamp}`;
-        const newFile = new File({
-            filename: uniqueFilename,
-            mimetype: req.file.mimetype,
-            size: req.file.size,
-        });
+    // Convert uploaded image data to base64 string
+    const imageBuffer = req.file.buffer.toString('base64');
+    
+    // Pass uploaded image data to the Python script
+    const pythonProcess = spawn('python', ['process_image.py']);
 
-        const savedFile = await newFile.save();
+    pythonProcess.stdin.write(JSON.stringify({ userId, imageBuffer }));
+    pythonProcess.stdin.end();
 
-        const pythonProcess = spawn('python', ['process_image.py', savedFile.filename]);
+    let modelOutput = '';
 
-        pythonProcess.stdin.write(JSON.stringify(req.file.buffer));
-        pythonProcess.stdin.end();
+    pythonProcess.stdout.on('data', (data) => {
+      console.log(`Python model output: ${data}`);
+      modelOutput += data;
+    });
 
-        let modelOutput = '';
+    pythonProcess.stderr.on('data', (data) => {
+      console.error(`Python model error: ${data}`);
+    });
 
-        pythonProcess.stdout.on('data', (data) => {
-            console.log(`Python model output: ${data}`);
-            modelOutput += data;
-        });
-
-        pythonProcess.stderr.on('data', (data) => {
-            console.error(`Python model error: ${data}`);
-            res.status(500).json({ error: 'An error occurred during image processing' });
-        });
-
-        pythonProcess.on('close', (code) => {
-            if (code !== 0) {
-                return res.status(500).json({ error: 'Image processing failed' });
-            }
-            res.json({ fileId: savedFile._id, message: 'Image uploaded and processed successfully', modelOutput });
-        });
-    } catch (error) {
-        console.error('Error during file upload:', error);
-        res.status(500).json({ error: 'An unexpected error occurred' });
-    }
+    pythonProcess.on('close', (code) => {
+      console.log(`Python model process exited with code ${code}`);
+      // Send the model output back to the client as JSON response
+      res.json({ fileId: savedFile._id, message: 'Image uploaded and processed successfully', modelOutput });
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
-
 
 // Get file route
 app.get('/files/:id', async (req, res) => {
@@ -305,4 +298,4 @@ app.listen(port, () => {
 });
 
 // List storage buckets
-listStorageBuckets(); // Assuming this function is defined elsewhere
+listStorageBuckets();
