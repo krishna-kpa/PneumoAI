@@ -83,53 +83,59 @@ const upload = multer({ storage: multerStorage });
 
 // Upload route
 app.post('/upload', upload.single('file'), async (req, res) => {
-  try {
-    const userId = req.body.userId;
-    console.log("Request for upload received");
-    const timestamp = Date.now(); 
-    const uniqueFilename = `${userId}-${timestamp}`;
-    const newFile = new File({
-      filename: uniqueFilename,
-      mimetype: req.file.mimetype,
-      size: req.file.size,
-    });
+    try {
+        console.log("Request for upload received");
+        const userId = req.body.userId;
 
-    const savedFile = await newFile.save();
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
 
-    // Convert uploaded image data to base64 string
-    const imageBuffer = req.file.buffer.toString('base64');
-    
-    // Pass uploaded image data to the Python script
-   const pythonProcess = spawn('python', ['process_image.py']);
+        const timestamp = Date.now();
+        const uniqueFilename = `${userId}-${timestamp}`;
+        const newFile = new File({
+            filename: uniqueFilename,
+            mimetype: req.file.mimetype,
+            size: req.file.size,
+        });
 
-  const jsonData = {
-    userId: req.body.userId,
-    image: req.file.buffer.toString('base64'),
-};
+        // Save file to MongoDB asynchronously
+        const savedFile = await newFile.save();
 
-pythonProcess.stdin.write(JSON.stringify(jsonData));
-pythonProcess.stdin.end();
-    let modelOutput = '';
+        console.time('imageProcessingTime'); // Start timing image processing
 
-    pythonProcess.stdout.on('data', (data) => {
-      console.log(`Python model output: ${data}`);
-      modelOutput += data;
-    });
+        // Pass uploaded image data to the Python script
+        const pythonProcess = spawn('python', ['process_image.py']);
 
-    pythonProcess.stderr.on('data', (data) => {
-      console.error(`Python model error: ${data}`);
-    });
+        const jsonData = {
+            userId,
+            image: req.file.buffer.toString('base64'),
+        };
 
-    pythonProcess.on('close', (code) => {
-      console.log(`Python model process exited with code ${code}`);
-      // Send the model output back to the client as JSON response
-      res.json({ fileId: savedFile._id, message: 'Image uploaded and processed successfully', modelOutput });
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+        pythonProcess.stdin.write(JSON.stringify(jsonData));
+        pythonProcess.stdin.end();
+
+        let modelOutput = '';
+
+        pythonProcess.stdout.on('data', (data) => {
+            console.log(`Python model output: ${data}`);
+            modelOutput += data;
+        });
+
+        pythonProcess.stderr.on('data', (data) => {
+            console.error(`Python model error: ${data}`);
+        });
+
+        pythonProcess.on('close', (code) => {
+            console.timeEnd('imageProcessingTime'); // End timing
+            console.log(`Python model process exited with code ${code}`);
+            res.json({ fileId: savedFile._id, message: 'Image uploaded and processed successfully', modelOutput });
+        });
+    } catch (error) {
+        console.error('Error during image processing:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
-
 // Get file route
 app.get('/files/:id', async (req, res) => {
   try {
