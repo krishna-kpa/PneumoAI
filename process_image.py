@@ -47,7 +47,13 @@ if __name__ == "__main__":
             raise KeyError("'image' key not found in JSON data")
 
         # Install required Python packages
-        subprocess.run(['pip', 'install', 'numpy', 'tensorflow', 'Pillow'])
+        pip_command = ['pip', 'install', 'numpy', 'tensorflow', 'Pillow']
+        pip_process = subprocess.Popen(pip_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        pip_output, pip_error = pip_process.communicate()
+
+        # Check if there were any errors during package installation
+        if pip_process.returncode != 0:
+            raise RuntimeError(f"Package installation failed with error: {pip_error.decode()}")
 
         # Reload numpy after installation
         import numpy as np
