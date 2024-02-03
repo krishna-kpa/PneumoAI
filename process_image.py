@@ -5,6 +5,7 @@ import base64
 import io
 from PIL import Image
 import numpy as np
+from tensorflow.keras.models import load_model
 
 try:
     print("Image processing...")
@@ -30,7 +31,9 @@ try:
     model = load_model('trained.h5')  # Replace 'trained.h5' with your model file path
 
     # Perform inference
-    predictions = model.predict(np.expand_dims(image, axis=0))
+    # Ensure the image is properly preprocessed according to the model requirements
+    img = preprocess_image(image)
+    predictions = model.predict(np.expand_dims(img, axis=0))
 
     # Convert predictions to JSON or any other suitable format
     output = predictions.tolist()
@@ -52,3 +55,11 @@ except Exception as e:
     print("Error during image processing:", e)
     print(json.dumps({"error": "An error occurred during image processing", "exception": str(e)}))
     sys.stdout.flush()
+
+def preprocess_image(image):
+    # Add your image preprocessing steps here
+    # Ensure the image is resized, normalized, and formatted according to the model requirements
+    # Example: 
+    resized_img = np.array(Image.fromarray(image).resize((300, 300)))
+    normalized_img = resized_img / 255.0  # Normalize pixel values
+    return normalized_img
