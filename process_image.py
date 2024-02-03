@@ -33,47 +33,48 @@ def process_image(image_data):
 
     except Exception as e:
         return {"error": "An error occurred during image processing", "exception": str(e)}
+
 try:
-        print("Image processing...")
-        # Load the image data from Node.js
-        image_data = json.loads(sys.stdin.readline())
+    print("Image processing...")
+    # Load the image data from Node.js
+    image_data = json.loads(sys.stdin.readline())
 
-        # Check if 'image' key exists in the JSON data
-        if 'image' not in image_data:
-            raise KeyError("'image' key not found in JSON data")
+    # Check if 'image' key exists in the JSON data
+    if 'image' not in image_data:
+        raise KeyError("'image' key not found in JSON data")
 
-        # Install required Python packages
-        pip_command = ['pip', 'install', 'numpy', 'tensorflow', 'Pillow']
-        pip_process = subprocess.Popen(pip_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        pip_output, pip_error = pip_process.communicate()
-        from PIL import Image
-        import numpy as np
-        from tensorflow.keras.models import load_model
-        # Check if there were any errors during package installation
-        if pip_process.returncode != 0:
-            raise RuntimeError(f"Package installation failed with error: {pip_error.decode()}")
+    # Install required Python packages
+    pip_command = ['pip', 'install', 'numpy', 'tensorflow', 'Pillow']
+    pip_process = subprocess.Popen(pip_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    pip_output, pip_error = pip_process.communicate()
+    from PIL import Image
+    import numpy as np
+    from tensorflow.keras.models import load_model
+    # Check if there were any errors during package installation
+    if pip_process.returncode != 0:
+        raise RuntimeError(f"Package installation failed with error: {pip_error.decode()}")
 
-        # Reload numpy after installation
-        import numpy as np
-        from tensorflow.keras.models import load_model
+    # Reload numpy after installation
+    import numpy as np
+    from tensorflow.keras.models import load_model
 
-        # Process the image
-        model_output = process_image(image_data['image'])
+    # Process the image
+    model_output = process_image(image_data['image'])
 
-        # Send the output back to Node.js
-        print(json.dumps(model_output))
-        sys.stdout.flush()
+    # Send the output back to Node.js
+    print(json.dumps(model_output))
+    sys.stdout.flush()
 
 except json.JSONDecodeError as e:
-        print("Error: Invalid JSON format:", e)
-        sys.stdout.flush()
+    print("Error: Invalid JSON format:", e)
+    sys.stdout.flush()
 
 except KeyError as e:
-        print("Error during image processing:", e)
-        print(json.dumps({"error": "An error occurred during image processing", "exception": str(e)}))
-        sys.stdout.flush()
+    print("Error during image processing:", e)
+    print(json.dumps({"error": "An error occurred during image processing", "exception": str(e)}))
+    sys.stdout.flush()
 
 except Exception as e:
-        print("Error during image processing:", e)
-        print(json.dumps({"error": "An error occurred during image processing", "exception": str(e)}))
-        sys.stdout.flush()
+    print("Error during image processing:", e)
+    print(json.dumps({"error": "An error occurred during image processing", "exception": str(e)}))
+    sys.stdout.flush()
