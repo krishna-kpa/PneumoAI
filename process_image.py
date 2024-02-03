@@ -3,9 +3,7 @@ import json
 import subprocess
 import base64
 import io
-from PIL import Image
-import numpy as np
-from tensorflow.keras.models import load_model
+
 
 def preprocess_image(image):
     # Add your image preprocessing steps here
@@ -50,7 +48,9 @@ if __name__ == "__main__":
         pip_command = ['pip', 'install', 'numpy', 'tensorflow', 'Pillow']
         pip_process = subprocess.Popen(pip_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         pip_output, pip_error = pip_process.communicate()
-
+        from PIL import Image
+        import numpy as np
+        from tensorflow.keras.models import load_model
         # Check if there were any errors during package installation
         if pip_process.returncode != 0:
             raise RuntimeError(f"Package installation failed with error: {pip_error.decode()}")
