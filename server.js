@@ -129,7 +129,9 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-
+app.get('/',(req,res)=>{
+  return res.status(200).json({ error: 'anjali need this' });
+});
 // Get file route
 app.get('/files/:id', async (req, res) => {
   try {
