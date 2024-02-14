@@ -15,8 +15,7 @@ app.post('/predict', async (req, res) => {
     const imageData = req.body.imageData;
     
     // Load the model
-    const model = await tf.loadLayersModel('./trained.h5');
-
+    const model = await tf.loadLayersModel('file://trained.h5');
     // Preprocess the image data (if necessary)
     // Example: convert imageData to tensor
     const tensorData = preprocessImageData(imageData);
