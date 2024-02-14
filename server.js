@@ -13,11 +13,16 @@ app.post('/predict', async (req, res) => {
   try {
     // Get the image data from the request
     const imageData = req.body.imageData;
-    
+
+    // Validate input data
+    if (!imageData) {
+      throw new Error('Image data is missing');
+    }
+
     // Load the model
     const model = await tf.loadLayersModel('file://trained.h5');
-    // Preprocess the image data (if necessary)
-    // Example: convert imageData to tensor
+    
+    // Preprocess the image data
     const tensorData = preprocessImageData(imageData);
 
     // Run prediction with the model
@@ -35,7 +40,6 @@ app.post('/predict', async (req, res) => {
   }
 });
 
-// Example function to preprocess image data
 // Example function to preprocess image data
 function preprocessImageData(imageData) {
   // Convert base64 image data to tensor
