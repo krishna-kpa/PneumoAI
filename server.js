@@ -37,9 +37,11 @@ app.post('/predict', async (req, res) => {
 });
 
 // Example function to preprocess image data
+// Example function to preprocess image data
 function preprocessImageData(imageData) {
-  // Convert imageData to tensor (example)
-  const tensorData = tf.tensor(imageData);
+  // Convert base64 image data to tensor
+  const buffer = Buffer.from(imageData, 'base64');
+  const tensorData = tf.node.decodeImage(buffer, 3); // Assuming RGB image with 3 channels
   return tensorData;
 }
 
