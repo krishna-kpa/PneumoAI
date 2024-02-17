@@ -7,17 +7,6 @@ const { spawn } = require('child_process');
 const app = express();
 const port = 3000;
 
-// Load the trained model
-let model;
-(async () => {
-    try {
-        model = await tf.loadLayersModel('file://trained.h5');
-        console.log('Model loaded');
-    } catch (error) {
-        console.error('Error loading model:', error);
-    }
-})();
-
 // Middleware to parse JSON body
 app.use(bodyParser.json({ limit: '50mb' }));
 
