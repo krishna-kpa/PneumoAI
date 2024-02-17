@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const tf = require('@tensorflow/tfjs-node');
 const fs = require('fs').promises;
+const { spawn } = require('child_process');
 
 const app = express();
 const port = 3000;
@@ -23,7 +24,7 @@ app.use(bodyParser.json({ limit: '50mb' }));
 // Route to handle image upload and prediction
 app.post('/predict', async (req, res) => {
     try {
-        // Get the image data from the request
+        // Get the base64-encoded image data from the request
         const imageData = req.body.imageData;
 
         // Validate input data
@@ -38,30 +39,24 @@ app.post('/predict', async (req, res) => {
         const tempImagePath = 'temp-image.jpg'; // Choose a temporary file name
         await fs.writeFile(tempImagePath, buffer);
 
-        // Preprocess the image
-        const img = await preprocessImage(tempImagePath);
+        // Call Python script for prediction
+        const pythonProcess = spawn('python', ['predict.py', tempImagePath]);
 
-        // Run prediction with the model
-        const prediction = model.predict(img);
+        // Handle output from the Python script
+        pythonProcess.stdout.on('data', (data) => {
+            const predictedClassIndex = data.toString().trim();
+            res.json({ predictedClassIndex });
+        });
 
-        // Get the predicted class
-        const predictedClassIndex = prediction.argMax(1).dataSync()[0];
-
-        // Respond with prediction result
-        res.json({ predictedClassIndex });
+        pythonProcess.stderr.on('data', (data) => {
+            console.error('Python script error:', data.toString());
+            res.status(500).json({ error: 'An error occurred during prediction' });
+        });
     } catch (error) {
         console.error('Prediction error:', error);
         res.status(500).json({ error: 'An error occurred during prediction' });
     }
 });
-
-// Function to preprocess image
-async function preprocessImage(imagePath) {
-    const img = await tf.node.decodeImage(await fs.readFile(imagePath), 3); // Assuming RGB image with 3 channels
-    const resizedImg = tf.image.resizeBilinear(img, [300, 300]); // Resize image to match model input shape
-    const expandedImg = resizedImg.expandDims(0); // Add batch dimension
-    return expandedImg;
-}
 
 // Start the server
 app.listen(port, () => {
