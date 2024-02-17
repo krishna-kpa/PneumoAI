@@ -1,4 +1,14 @@
+import os
 import sys
+import subprocess
+
+# Define required dependencies
+dependencies = ['opencv-python', 'numpy', 'tensorflow']
+
+# Install dependencies using pip
+for dependency in dependencies:
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', dependency])
+
 import cv2
 import numpy as np
 from keras.models import load_model
