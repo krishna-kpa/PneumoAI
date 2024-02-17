@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const multer = require('multer');
 const tf = require('@tensorflow/tfjs-node');
 const fs = require('fs').promises;
 const { spawn } = require('child_process');
@@ -7,26 +8,17 @@ const { spawn } = require('child_process');
 const app = express();
 const port = 3000;
 
+// Configure multer to handle file uploads
+const upload = multer({ dest: 'uploads/' });
+
 // Middleware to parse JSON body
 app.use(bodyParser.json({ limit: '50mb' }));
 
 // Route to handle image upload and prediction
-app.post('/predict', async (req, res) => {
+app.post('/predict', upload.single('image'), async (req, res) => {
     try {
-        // Get the base64-encoded image data from the request
-        const imageData = req.body.imageData;
-
-        // Validate input data
-        if (!imageData) {
-            throw new Error('Image data is missing');
-        }
-
-        // Convert base64 image data to buffer
-        const buffer = Buffer.from(imageData, 'base64');
-
-        // Write buffer to a temporary file
-        const tempImagePath = 'temp-image.jpg'; // Choose a temporary file name
-        await fs.writeFile(tempImagePath, buffer);
+        // Get the uploaded image file path
+        const tempImagePath = req.file.path;
 
         // Call Python script for prediction
         const pythonProcess = spawn('python', ['predict.py', tempImagePath]);
