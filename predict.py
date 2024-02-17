@@ -4,7 +4,7 @@ import numpy as np
 from keras.models import load_model
 
 # Load the trained model
-model = load_model("trained.h5")
+model = load_model("/trained.h5")
 
 # Function to preprocess image for prediction
 def preprocess_image(image_path):
